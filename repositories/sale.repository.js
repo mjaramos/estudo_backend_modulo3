@@ -1,93 +1,85 @@
-import { connect } from './db.js';
+import Sale from '../models/sale.model.js';
+import Product from '../models/product.model.js';
+import Client from '../models/client.model.js';
 
 async function insertSale(sale) {
-  const conn = await connect();
-
   try {
-    const sql =
-      'INSERT INTO sales (value, date, client_id, product_id) VALUES ($1, $2, $3, $4) RETURNING *';
-    const values = [sale.value, sale.date, sale.client_id, sale.product_id];
-
-    const res = await conn.query(sql, values);
-
-    return res.rows[0];
-  } catch (error) {
-    throw error;
-  } finally {
-    conn.release();
-  }
+    return await Sale.create(sale);
+  } catch (error) {}
 }
 
 async function getSales() {
-  const conn = await connect();
-
   try {
-    const res = await conn.query('SELECT * FROM sales ORDER BY sale_id');
-    return res.rows;
-  } catch (error) {
-  } finally {
-    conn.release();
-  }
+    return await Sale.findAll({
+      include: [
+        {
+          model: Product,
+        },
+        {
+          model: Client,
+        },
+      ],
+    });
+  } catch (error) {}
 }
 
 async function getSalesByProductId(productId) {
-  const conn = await connect();
-
   try {
-    const res = await conn.query(
-      'SELECT * FROM sales WHERE product_id = $1 ORDER BY sale_id',
-      [productId]
-    );
-    return res.rows;
-  } catch (error) {
-  } finally {
-    conn.release();
-  }
+    return await Sale.findAll({
+      where: {
+        productId,
+      },
+    });
+  } catch (error) {}
+}
+
+async function getSalesBySupplierId(supplierId) {
+  try {
+    return await Sale.findAll({
+      include: [
+        {
+          model: Product,
+          where: {
+            supplierId,
+          },
+        },
+      ],
+    });
+  } catch (error) {}
 }
 
 async function getSale(id) {
-  const conn = await connect();
-
   try {
-    const sql = 'SELECT * FROM sales WHERE sale_id = $1';
-    const values = [id];
-    const res = await conn.query(sql, values);
-    return res.rows[0];
-  } catch (error) {
-  } finally {
-    conn.release();
-  }
+    return await Sale.findByPk(id);
+  } catch (error) {}
 }
 
 async function deleteSale(id) {
-  const conn = await connect();
-
   try {
-    const sql = 'DELETE FROM sales WHERE sale_id = $1';
-    const values = [id];
-    await conn.query(sql, values);
-  } catch (error) {
-  } finally {
-    conn.release();
-  }
+    await Sale.destroy({
+      where: {
+        saleId: id,
+      },
+    });
+  } catch (error) {}
 }
 
 async function updateSale(sale) {
-  const conn = await connect();
-
   try {
-    const sql =
-      'UPDATE sales SET value = $1, date = $2, client_id = $3 WHERE sale_id = $4 RETURNING *';
-    const values = [sale.value, sale.date, sale.client_id, sale.sale_id];
-
-    const res = await conn.query(sql, values);
-
-    return res.rows[0];
-  } catch (error) {
-    throw error;
-  } finally {
-    conn.release();
-  }
+    await Sale.update(
+      {
+        value: sale.value,
+        date: sale.date,
+        clientId: sale.clientId,
+      },
+      {
+        where: {
+          saleId: sale.saleId,
+        },
+      }
+    );
+    return await getSale(sale.saleId);
+  } catch (error) {}
 }
 
 export default {
@@ -97,4 +89,5 @@ export default {
   updateSale,
   deleteSale,
   getSalesByProductId,
+  getSalesBySupplierId,
 };
