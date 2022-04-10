@@ -45,8 +45,8 @@ async function deleteProduct(req, res, next) {
   try {
     let id = req.params.id;
     await ProductService.deleteProduct(id);
-    res.end();
     logger.info(`DELETE /product/:{id}`);
+    res.end();
   } catch (error) {
     next(error);
   }
@@ -68,8 +68,78 @@ async function updateProduct(req, res, next) {
       );
     }
     product = await ProductService.updateProduct(product);
-    res.send(product);
     logger.info(`PUT /product - ${JSON.stringify(product)}`);
+    res.send(product);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function createProductInfo(req, res, next) {
+  try {
+    let productInfo = req.body;
+    if (!productInfo.productId) {
+      throw new Error('Product Id é obrigatório');
+    }
+    await ProductService.createProductInfo(productInfo);
+    logger.info(`POST /product/info - ${JSON.stringify(productInfo)}`);
+    res.end();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateProductInfo(req, res, next) {
+  try {
+    let productInfo = req.body;
+    if (!productInfo.productId) {
+      throw new Error('Product id é obrigatório');
+    }
+    await ProductService.updateProductInfo(productInfo);
+    logger.info(`PUT /product/info - ${JSON.stringify(productInfo)}`);
+    res.end();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function createReview(req, res, next) {
+  try {
+    let params = req.body;
+    if (!params.productId || !params.review) {
+      throw new Error('Product id e Review são obrigatórios.');
+    }
+    await ProductService.createReview(params.review, params.productId);
+    logger.info(`POST /product/review - ${JSON.stringify(params)}`);
+    res.end();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteReview(req, res, next) {
+  try {
+    await ProductService.deleteReview(req.params.id, req.params.index);
+    logger.info(`DELETE /product/:id/review/:index`);
+    res.end();
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getProductsInfo(req, res, next) {
+  try {
+    res.send(await ProductService.getProductsInfo());
+    logger.info('GET /product/info');
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteProductInfo(req, res, next) {
+  try {
+    res.send(await ProductService.deleteProductInfo(req.params.id));
+    logger.info('DELETE /product/info/:id');
   } catch (error) {
     next(error);
   }
@@ -81,4 +151,10 @@ export default {
   getProduct,
   deleteProduct,
   updateProduct,
+  createProductInfo,
+  updateProductInfo,
+  createReview,
+  deleteReview,
+  getProductsInfo,
+  deleteProductInfo,
 };
