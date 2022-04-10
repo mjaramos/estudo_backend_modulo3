@@ -1,9 +1,9 @@
-import mongodb from 'mongodb';
+import mongoose from 'mongoose';
 
-function getClient() {
+async function connect() {
   const uri =
-    'mongodb+srv://root:igti@cluster0.tvabk.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
-  return new mongodb.MongoClient(uri);
+    'mongodb+srv://root:igti@cluster0.tvabk.mongodb.net/store?retryWrites=true&w=majority';
+  return await mongoose.connect(uri);
 }
 
-export { getClient };
+export { connect };
